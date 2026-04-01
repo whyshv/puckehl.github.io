@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Турнирная таблица EHL</title>
+    <!-- Подключаем шрифт Stapel Expanded Bold -->
+    <link href="https://fonts.cdnfonts.com/css/stapel" rel="stylesheet">
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/stapel');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            padding: 40px 20px;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        /* Градиентный фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #111111;
+            border-radius: 24px;
+            overflow-x: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        /* Красивый заголовок шрифтом Stapel Expanded Bold */
+        .main-title {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .main-title h1 {
+            font-family: 'Stapel', 'Bebas Neue', 'Impact', sans-serif;
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .main-title .sub {
+            font-family: 'Stapel', 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 12px;
+            text-transform: uppercase;
+        }
+        
+        /* Черно-белая таблица */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        th {
+            background: #0f0f0f;
+            padding: 18px 12px;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-family: 'Inter', sans-serif;
+        }
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        tr {
+            transition: all 0.2s ease;
+        }
+        tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        /* Места 1-3 с особым стилем */
+        .rank-1, .rank-2, .rank-3 {
+            font-weight: 800;
+            font-size: 18px;
+        }
+        .rank-1 { color: #ffd966; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+        
+        /* Команда с логотипом */
+        .team {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 0;
+            object-fit: contain;
+            background: transparent;
+            display: block;
+            flex-shrink: 0;
+        }
+        .team-name {
+            font-weight: 500;
+            font-size: 15px;
+            letter-spacing: -0.2px;
+        }
+        
+        /* Очки */
+        .points {
+            font-weight: 800;
+            color: #ffffff;
+            font-size: 18px;
+            font-family: 'Inter', monospace;
+        }
+        
+        /* Легенда */
+        .legend {
+            padding: 20px 24px;
+            background: #0c0c0c;
+            font-size: 12px;
+            color: #6b6b6b;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-family: 'Inter', monospace;
+        }
+        .legend a {
+            color: #ff6b35;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .legend a:hover {
+            color: #ff8c5a;
+            text-decoration: underline;
+        }
+        .admins {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        .admins span {
+            color: #ff6b35;
+            font-weight: 600;
+        }
+        
+        /* Кнопка админ-панели */
+        .admin-btn {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            background: rgba(20,20,20,0.9);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-family: 'Stapel', 'Bebas Neue', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        .admin-btn:hover {
+            background: rgba(255,107,53,0.9);
+            border-color: rgba(255,107,53,0.5);
+            transform: scale(1.02);
+        }
+        
+        /* Модальное окно админ-панели */
+        .admin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .admin-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .admin-modal-content {
+            background: #111111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .admin-modal-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .admin-modal-title {
+            font-family: 'Stapel', 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .admin-modal-close {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .admin-modal-close:hover {
+            background: rgba(255,107,53,0.8);
+            border-color: #ff6b35;
+        }
+        .admin-modal-body {
+            padding: 24px;
+        }
+        
+        /* Форма логина */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+        .login-input {
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: #1a1a1a;
+            color: white;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+        }
+        .login-input:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+        .login-btn {
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b35, #e55a2b);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-family: 'Stapel', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .login-btn:hover {
+            transform: scale(1.02);
+        }
+        .login-error {
+            color: #ff6b35;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        /* Редактор таблицы */
+        .editor-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .editor-table th, .editor-table td {
+            padding: 10px 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .editor-table th:first-child, .editor-table td:first-child {
+            text-align: left;
+        }
+        .editor-table th {
+            background: #0a0a0a;
+            color: #ff6b35;
+            font-weight: 600;
+        }
+        .editor-table input {
+            width: 100%;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .editor-table input:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+        .editor-table input[type="number"] {
+            width: 65px;
+            text-align: center;
+        }
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b35, #e55a2b);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-family: 'Stapel', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: all 0.2s;
+        }
+        .save-btn:hover {
+            transform: scale(1.01);
+        }
+        .logout-btn {
+            background: #2a2a2a;
+            margin-top: 12px;
+        }
+        .logout-btn:hover {
+            background: #3a3a3a;
+        }
+        
+        /* Инфо-блок в админке */
+        .admin-info {
+            margin-top: 20px;
+            padding: 16px;
+            background: #0a0a0a;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 12px;
+            }
+            .main-title h1 {
+                font-size: 36px;
+                letter-spacing: 3px;
+            }
+            .main-title .sub {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 11px;
+            }
+            .team-logo {
+                width: 32px;
+                height: 32px;
+            }
+            .team-name {
+                font-size: 12px;
+            }
+            .points {
+                font-size: 14px;
+            }
+            .admin-btn {
+                padding: 10px 20px;
+                font-size: 11px;
+            }
+            .admin-modal-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-title">
+            <h1>EHL REGULAR</h1>
+            <div class="sub">ELITE HOCKEY LEAGUE · 1 SEASON</div>
+        </div>
+        <table id="standingsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>КОМАНДА</th>
+                    <th>И</th>
+                    <th>В</th>
+                    <th>ВО</th>
+                    <th>ПО</th>
+                    <th>П</th>
+                    <th>Ш</th>
+                    <th>О</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Данные заполняются через JavaScript -->
+            </tbody>
+        </table>
+        <div class="legend">
+            И — игры | В — победы | ВО — победы в овертайме | ПО — поражения в овертайме | П — поражения | Ш — шайбы (забито-пропущено) | О — очки
+            <div class="admins">
+                Admins : <span>@semanticsbest</span>, <span>@whyshv</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Кнопка админ-панели -->
+    <button class="admin-btn" onclick="openAdminModal()">ADMIN PANEL</button>
+    
+    <!-- Модальное окно админ-панели -->
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h2 class="admin-modal-title">ADMIN PANEL</h2>
+                <button class="admin-modal-close" onclick="closeAdminModal()">✕</button>
+            </div>
+            <div class="admin-modal-body" id="adminBody">
+                <!-- Форма логина или редактор -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Данные таблицы по умолчанию (12 команд)
+        const defaultTeams = [
+            { name: "Авангард", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Металлург", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Спартак", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Трактор", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Сибирь", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Салават Юлаев", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "ЦСКА", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "СКА-1946", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Торпедо", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Северсталь", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Динамо Минск", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 },
+            { name: "Локомотив", logo: "", games: 0, wins: 0, winsOt: 0, lossesOt: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 }
+        ];
+        
+        // Загрузка данных из localStorage
+        let teams = [];
+        
+        function loadData() {
+            const saved = localStorage.getItem('ehl_standings');
+            if (saved) {
+                teams = JSON.parse(saved);
+            } else {
+                teams = JSON.parse(JSON.stringify(defaultTeams));
+            }
+            renderTable();
+        }
+        
+        function saveData() {
+            localStorage.setItem('ehl_standings', JSON.stringify(teams));
+            renderTable();
+        }
+        
+        function calculatePoints(team) {
+            return team.wins * 2 + team.winsOt * 2 + team.lossesOt * 1;
+        }
+        
+        function sortTeams() {
+            teams.forEach(team => {
+                team.points = calculatePoints(team);
+            });
+            teams.sort((a, b) => b.points - a.points);
+        }
+        
+        function renderTable() {
+            sortTeams();
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            teams.forEach((team, index) => {
+                const row = tbody.insertRow();
+                const rank = index + 1;
+                let rankClass = '';
+                if (rank === 1) rankClass = 'rank-1';
+                else if (rank === 2) rankClass = 'rank-2';
+                else if (rank === 3) rankClass = 'rank-3';
+                
+                const rankCell = row.insertCell(0);
+                rankCell.className = rankClass;
+                rankCell.textContent = rank;
+                
+                const teamCell = row.insertCell(1);
+                let logoHtml = '';
+                if (team.logo && team.logo.trim() !== '') {
+                    logoHtml = `<img class="team-logo" src="${team.logo}" alt="${team.name}" onerror="this.style.display='none'">`;
+                } else {
+                    logoHtml = `<div class="team-logo" style="display: flex; align-items: center; justify-content: center; font-size: 24px;">🏒</div>`;
+                }
+                teamCell.innerHTML = `<div class="team">${logoHtml}<span class="team-name">${team.name}</span></div>`;
+                
+                const totalGames = team.wins + team.winsOt + team.lossesOt + team.losses;
+                
+                row.insertCell(2).textContent = totalGames;
+                row.insertCell(3).textContent = team.wins;
+                row.insertCell(4).textContent = team.winsOt;
+                row.insertCell(5).textContent = team.lossesOt;
+                row.insertCell(6).textContent = team.losses;
+                row.insertCell(7).textContent = `${team.goalsFor}-${team.goalsAgainst}`;
+                row.insertCell(8).innerHTML = `<span class="points">${team.points}</span>`;
+            });
+        }
+        
+        let isLoggedIn = false;
+        
+        function openAdminModal() {
+            const modal = document.getElementById('adminModal');
+            const adminBody = document.getElementById('adminBody');
+            
+            if (!isLoggedIn) {
+                adminBody.innerHTML = `
+                    <form class="login-form" onsubmit="login(event)">
+                        <input type="text" id="loginUsername" class="login-input" placeholder="LOGIN" autocomplete="off">
+                        <input type="password" id="loginPassword" class="login-input" placeholder="PASSWORD">
+                        <button type="submit" class="login-btn">LOGIN</button>
+                        <div id="loginError" class="login-error"></div>
+                    </form>
+                `;
+            } else {
+                renderEditor();
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.remove('active');
+        }
+        
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (username === 'whyshv' && password === 'moscow80') {
+                isLoggedIn = true;
+                renderEditor();
+                document.getElementById('loginError').textContent = '';
+            } else {
+                document.getElementById('loginError').textContent = 'Invalid login or password';
+            }
+        }
+        
+        function renderEditor() {
+            const adminBody = document.getElementById('adminBody');
+            let html = `
+                <div style="overflow-x: auto;">
+                    <table class="editor-table">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 120px;">TEAM</th>
+                                <th style="min-width: 250px;">LOGO (URL)</th>
+                                <th>W</th>
+                                <th>WOT</th>
+                                <th>LOT</th>
+                                <th>L</th>
+                                <th>GF</th>
+                                <th>GA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            teams.forEach((team, index) => {
+                const previewHtml = team.logo ? 
+                    `<img src="${escapeHtml(team.logo)}" style="width: 28px; height: 28px; object-fit: contain; vertical-align: middle; margin-left: 8px;" onerror="this.style.display='none'">` : '';
+                
+                html += `
+                    <tr data-index="${index}">
+                        <td><input type="text" class="edit-name" value="${escapeHtml(team.name)}" style="min-width: 100px;"></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="text" class="edit-logo" value="${escapeHtml(team.logo || '')}" placeholder="https://...png" style="flex: 1;">
+                                ${previewHtml}
+                            </div>
+                        </td>
+                        <td><input type="number" class="edit-wins" value="${team.wins}" style="width: 60px;"></td>
+                        <td><input type="number" class="edit-winsOt" value="${team.winsOt}" style="width: 60px;"></td>
+                        <td><input type="number" class="edit-lossesOt" value="${team.lossesOt}" style="width: 60px;"></td>
+                        <td><input type="number" class="edit-losses" value="${team.losses}" style="width: 60px;"></td>
+                        <td><input type="number" class="edit-goalsFor" value="${team.goalsFor}" style="width: 60px;"></td>
+                        <td><input type="number" class="edit-goalsAgainst" value="${team.goalsAgainst}" style="width: 60px;"></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="admin-info">
+                    Scoring system: win = 2 | OT win = 2 | OT loss = 1 | loss = 0<br>
+                    Games played (GP) is calculated automatically
+                </div>
+                <button class="save-btn" onclick="saveChanges()">SAVE CHANGES</button>
+                <button class="save-btn logout-btn" onclick="logout()">LOGOUT</button>
+            `;
+            
+            adminBody.innerHTML = html;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function saveChanges() {
+            const rows = document.querySelectorAll('#adminBody .editor-table tbody tr');
+            rows.forEach((row, idx) => {
+                const team = teams[idx];
+                team.name = row.querySelector('.edit-name').value;
+                team.logo = row.querySelector('.edit-logo').value;
+                team.wins = parseInt(row.querySelector('.edit-wins').value) || 0;
+                team.winsOt = parseInt(row.querySelector('.edit-winsOt').value) || 0;
+                team.lossesOt = parseInt(row.querySelector('.edit-lossesOt').value) || 0;
+                team.losses = parseInt(row.querySelector('.edit-losses').value) || 0;
+                team.goalsFor = parseInt(row.querySelector('.edit-goalsFor').value) || 0;
+                team.goalsAgainst = parseInt(row.querySelector('.edit-goalsAgainst').value) || 0;
+            });
+            
+            saveData();
+            alert('Data saved successfully!');
+        }
+        
+        function logout() {
+            isLoggedIn = false;
+            closeAdminModal();
+        }
+        
+        document.getElementById('adminModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAdminModal();
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAdminModal();
+        });
+        
+        loadData();
+    </script>
+</body>
+</html>
